@@ -89,33 +89,33 @@ app.post('/api/photos', upload.fields([
 });
 
 
+
 app.post('/api/auth/register', async (req, res) => {
     console.log("👤 Tentative de création de compte...");
     try {
-        const { username, password } = req.body;
-        console.log(`Détails reçus : username=${username}`);
+        const { username, password, pseudo, email } = req.body; // Récupération des nouveaux champs
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("Hashage réussi...");
 
         const user = await prisma.user.create({
-            data: { username, password: hashedPassword }
+            data: { 
+                username, 
+                password: hashedPassword,
+                pseudo: pseudo || username, // Si pas de pseudo fourni, on met l'username par défaut
+                email: email
+            }
         });
 
-        console.log(`✅ Utilisateur créé : ${username}`);
-        res.status(201).json({ userId: user.id });
+        console.log(`✅ Utilisateur créé : ${username} (Pseudo: ${user.pseudo})`);
+        res.status(201).json({ userId: user.id, pseudo: user.pseudo });
 
     } catch (error) {
-        // C'EST CETTE LIGNE QUI VA NOUS DIRE LA VÉRITÉ :
         console.error("❌ ERREUR DÉTAILLÉE :", error); 
-        
-        res.status(500).json({ 
-            error: "Erreur serveur", 
-            message: error.message,
-            code: error.code 
-        });
+        res.status(500).json({ error: "Erreur serveur", code: error.code });
     }
 });
+
+
 
 /** [PATCH] Mettre à jour la photo de profil */
 app.patch('/api/auth/profile-picture', upload.single('avatar'), async (req, res) => {
@@ -167,7 +167,7 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: "Mot de passe incorrect" });
         }
 
-        // 3. GÉNÉRER LE TOKEN (C'est ce qui manquait !)
+        // 3. GÉNÉRER LE TOKEN
         const token = jwt.sign(
             { userId: user.id, username: user.username }, 
             JWT_SECRET, 
@@ -178,14 +178,16 @@ app.post('/api/auth/login', async (req, res) => {
 
         // 4. Envoyer la réponse
         res.json({ 
-            message: "Connexion réussie",
-            token: token, // Maintenant la variable existe !
-            user: { 
-                id: user.id, 
-                username: user.username,
-                profileUrl: user.profileUrl ? `${BASE_URL}${user.profileUrl}` : null
-            }
-        });
+        message: "Connexion réussie",
+        token: token,
+        user: { 
+            id: user.id, 
+            username: user.username,
+            pseudo: user.pseudo, // On renvoie le pseudo
+            email: user.email,   // On renvoie l'email
+            profileUrl: user.profileUrl ? `${BASE_URL}${user.profileUrl}` : null
+        }
+    });
 
     } catch (error) {
         console.error("💥 Erreur Login :", error);
@@ -218,8 +220,9 @@ app.get('/api/photos', async (req, res) => {
             content: p.description,
             latitude: p.latitude,
             longitude: p.longitude,
+            
             imageUrl: `${BASE_URL}${p.url}`,
-            author: p.author ? p.author.username : "Anonyme",
+            author: p.author ? (p.author.pseudo || p.author.username) : "Anonyme",
             authorAvatarUrl: p.author && p.author.profileUrl ? `${BASE_URL}${p.author.profileUrl}` : null,
             likes: p.likesCount || 0,
             commentCount: p._count ? p._count.comments : 0,
@@ -249,14 +252,14 @@ app.get('/api/photos/:photoId/comments', async (req, res) => {
         });
 
         // On formate pour que l'app ait des URLs utilisables (http://...)
-        const formattedComments = comments.map(c => ({
-            id: c.id,
-            text: c.text,
-            date: c.createdAt,
-            authorName: c.author.username,
-            // URL de la photo de profil de celui qui commente
-            authorAvatarUrl: c.author.profileUrl ? `${BASE_URL}${c.author.profileUrl}` : null
-        }));
+       const formattedComments = comments.map(c => ({
+        id: c.id,
+        text: c.text,
+        date: c.createdAt,
+        // On affiche le pseudo en priorité
+        authorName: c.author.pseudo || c.author.username,
+        authorAvatarUrl: c.author.profileUrl ? `${BASE_URL}${c.author.profileUrl}` : null
+    }));
 
         res.json(formattedComments);
     } catch (error) {

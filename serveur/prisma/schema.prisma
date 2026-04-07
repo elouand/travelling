@@ -7,15 +7,16 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  username   String   @unique
-  password   String
-  email      String?
-  profileUrl String?  // <--- Nouveau champ pour la photo de profil
-  photos     Photo[]
-  groups     Group[]  @relation("UserGroups")
-  comments   Comment[]
-  likes    Like[]    // Relation : les likes donnés par cet utilisateur
+  id          Int       @id @default(autoincrement())
+  username    String    @unique // L'identifiant de connexion
+  pseudo      String?   // Le nom qui sera affiché sur l'app (ex: "Elouand du 34")
+  password    String
+  email       String?   @unique // Ajout de l'unicité pour l'email
+  profileUrl  String?
+  photos      Photo[]
+  groups      Group[]   @relation("UserGroups")
+  comments    Comment[]
+  likes       Like[]
 }
 
 model Photo {
