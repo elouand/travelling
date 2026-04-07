@@ -6,7 +6,7 @@ object NetworkConfig {
 
     // Tu n'as qu'UNE SEULE ligne à modifier ici quand tu changes de lieu
 
-    private const val IP_ADDRESS = "192.168.1.25"
+    private const val IP_ADDRESS = "10.139.5.174"//"192.168.1.25"
 
     private const val PORT = "3000"
 
