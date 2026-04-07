@@ -18,26 +18,10 @@ data class LikeResponse(
 data class CommentResponse(
     val id: Int,
     val text: String? = null,
-    @SerializedName("createdAt") val _createdAt: String? = null,
-    @SerializedName("date") val _date: String? = null,
-    val author: UserData? = null,
-    @SerializedName("authorName") val _authorName: String? = null,
-    @SerializedName("authorAvatarUrl") val _authorAvatarUrl: String? = null
-) {
-    val authorName: String get() = author?.username ?: _authorName ?: "Anonyme"
-    
-    val createdAt: String get() = _createdAt ?: _date ?: ""
-
-    val authorAvatarUrl: String? get() {
-        val rawUrl = author?.profileUrl ?: _authorAvatarUrl
-        if (rawUrl == null) return null
-        if (rawUrl.startsWith("http")) return rawUrl
-        
-        // Fix relative URL by prepending the base domain
-        val baseUrl = NetworkConfig.BASE_URL.substringBefore("/api")
-        return if (rawUrl.startsWith("/")) "$baseUrl$rawUrl" else "$baseUrl/$rawUrl"
-    }
-}
+    @SerializedName("date") val date: String? = null,
+    @SerializedName("authorName") val authorName: String? = null,
+    @SerializedName("authorAvatarUrl") val authorAvatarUrl: String? = null
+)
 
 interface PostApi {
     @GET("photos")
@@ -62,12 +46,12 @@ interface PostApi {
         @Body request: LikeRequest
     ): LikeResponse
 
+    @GET("photos/{photoId}/comments")
+    suspend fun getComments(@Path("photoId") photoId: String): List<CommentResponse>
+
     @POST("photos/{photoId}/comments")
     suspend fun addComment(
         @Path("photoId") photoId: String,
         @Body request: CommentRequest
     ): CommentResponse
-
-    @GET("photos/{photoId}/comments")
-    suspend fun getComments(@Path("photoId") photoId: String): List<CommentResponse>
 }

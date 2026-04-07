@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.traveling.domain.model.Post
 import com.traveling.ui.common.PostCard
 import com.traveling.ui.common.TravelingSearchBar
 import com.traveling.ui.theme.TravelingDeepPurple
@@ -154,18 +155,18 @@ fun FeedScreen(
                         contentType = { "post" }
                     ) { post ->
                         val tags = remember(post.tags) {
-                            post.tags?.map { it to TravelingTagBlue } ?: emptyList()
+                            post.tags?.map { it to TravelingTagBlue } ?: emptyList<Pair<String, Color>>()
                         }
                         
                         PostCard(
                             title = post.content ?: post.title ?: "Sans titre",
                             tags = tags,
                             location = post.title ?: "Inconnu",
-                            author = post.authorName,
+                            author = post.authorName ?: "Anonyme",
                             authorProfileUrl = post.authorAvatar,
                             imageUrl = post.fullImageUrl,
-                            likes = (post.likes ?: 0).toString(),
-                            comments = (post.commentsCount ?: 0).toString(),
+                            likes = post.likes.toString(),
+                            comments = post.commentsCount.toString(),
                             isLiked = post.isLiked,
                             onLikeClick = {
                                 currentUser?.id?.toIntOrNull()?.let { userId ->

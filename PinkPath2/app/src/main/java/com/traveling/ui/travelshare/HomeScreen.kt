@@ -79,15 +79,19 @@ fun HomeScreen(
             }
         } else {
             items(posts) { post ->
+                val tags = remember(post.tags) {
+                    post.tags?.map { it to TravelingTagBlue } ?: emptyList<Pair<String, Color>>()
+                }
+                
                 PostCard(
                     title = post.content ?: post.title ?: "Sans titre",
-                    tags = post.tags?.map { it to TravelingTagBlue } ?: emptyList(),
+                    tags = tags,
                     location = post.title ?: "Inconnu",
-                    author = post.authorName,
+                    author = post.authorName ?: "Anonyme",
                     authorProfileUrl = post.authorAvatar,
                     imageUrl = post.fullImageUrl,
-                    likes = (post.likes ?: 0).toString(),
-                    comments = (post.commentsCount ?: 0).toString(),
+                    likes = post.likes.toString(),
+                    comments = post.commentsCount.toString(),
                     isLiked = post.isLiked,
                     onLikeClick = { 
                         currentUser?.id?.toIntOrNull()?.let { userId ->

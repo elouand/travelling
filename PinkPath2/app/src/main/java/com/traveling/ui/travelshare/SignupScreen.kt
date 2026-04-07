@@ -3,7 +3,9 @@ package com.traveling.ui.travelshare
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -21,9 +23,12 @@ import com.traveling.ui.theme.TravelingDeepPurple
 @Composable
 fun SignupScreen(viewModel: AuthViewModel, onSignupSuccess: () -> Unit) {
     var username by remember { mutableStateOf("") }
+    var pseudo by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         viewModel.authEvent.collect { event ->
@@ -40,6 +45,7 @@ fun SignupScreen(viewModel: AuthViewModel, onSignupSuccess: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(scrollState)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -52,7 +58,7 @@ fun SignupScreen(viewModel: AuthViewModel, onSignupSuccess: () -> Unit) {
             )
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "Créer un profil",
@@ -62,18 +68,22 @@ fun SignupScreen(viewModel: AuthViewModel, onSignupSuccess: () -> Unit) {
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        AuthTextField(value = username, onValueChange = { username = it }, placeholder = "Username")
-        Spacer(modifier = Modifier.height(30.dp))
+        AuthTextField(value = username, onValueChange = { username = it }, placeholder = "Nom d'utilisateur")
+        Spacer(modifier = Modifier.height(20.dp))
+        AuthTextField(value = pseudo, onValueChange = { pseudo = it }, placeholder = "Pseudo")
+        Spacer(modifier = Modifier.height(20.dp))
+        AuthTextField(value = email, onValueChange = { email = it }, placeholder = "Email")
+        Spacer(modifier = Modifier.height(20.dp))
         AuthTextField(value = password, onValueChange = { password = it }, placeholder = "Mot-de-passe", isPassword = true)
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         AuthTextField(value = confirmPassword, onValueChange = { confirmPassword = it }, placeholder = "Confirmer mot-de-passe", isPassword = true)
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(40.dp))
 
         Button(
-            onClick = { viewModel.signup(username, password, confirmPassword) },
+            onClick = { viewModel.signup(username, password, confirmPassword, pseudo, email) },
             modifier = Modifier
                 .width(220.dp)
                 .height(80.dp),

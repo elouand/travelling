@@ -34,6 +34,22 @@ class SessionManager @Inject constructor(@ApplicationContext context: Context) {
         return prefs.getString("username", null)
     }
 
+    fun savePseudo(pseudo: String?) {
+        prefs.edit().putString("pseudo", pseudo).apply()
+    }
+
+    fun getPseudo(): String? {
+        return prefs.getString("pseudo", null)
+    }
+
+    fun saveEmail(email: String?) {
+        prefs.edit().putString("email", email).apply()
+    }
+
+    fun getEmail(): String? {
+        return prefs.getString("email", null)
+    }
+
     fun saveProfileUrl(url: String?) {
         prefs.edit().putString("profile_url", url).apply()
     }

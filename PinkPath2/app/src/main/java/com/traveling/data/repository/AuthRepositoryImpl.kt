@@ -30,9 +30,11 @@ class AuthRepositoryImpl @Inject constructor(
     init {
         val userId = sessionManager.getUserId()
         val username = sessionManager.getUsername()
+        val pseudo = sessionManager.getPseudo()
+        val email = sessionManager.getEmail()
         val profileUrl = sessionManager.getProfileUrl()
         if (userId != null && username != null) {
-            _currentUser.value = UserData(userId, username, profileUrl)
+            _currentUser.value = UserData(userId, username, pseudo, email, profileUrl)
         }
     }
 
@@ -51,6 +53,8 @@ class AuthRepositoryImpl @Inject constructor(
             sessionManager.saveAuthToken(response.token)
             sessionManager.saveUserId(response.user.id)
             sessionManager.saveUsername(response.user.username)
+            sessionManager.savePseudo(response.user.pseudo)
+            sessionManager.saveEmail(response.user.email)
             sessionManager.saveProfileUrl(response.user.profileUrl)
             _currentUser.value = response.user
             Result.success(response)

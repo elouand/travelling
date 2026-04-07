@@ -154,11 +154,22 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
+            val displayName = currentUser?.pseudo ?: currentUser?.username ?: "Utilisateur"
             Text(
-                text = "Bonjour, ${currentUser?.username} !",
+                text = "Bonjour, $displayName !",
                 style = MaterialTheme.typography.displayMedium,
-                color = TravelingDeepPurple
+                color = TravelingDeepPurple,
+                fontSize = 32.sp,
+                textAlign = TextAlign.Center
             )
+
+            if (currentUser?.email != null) {
+                Text(
+                    text = currentUser?.email!!,
+                    color = Color.Gray,
+                    fontSize = 16.sp
+                )
+            }
             
             Spacer(modifier = Modifier.height(40.dp))
 

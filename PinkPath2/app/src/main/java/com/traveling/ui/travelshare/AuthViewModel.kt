@@ -49,9 +49,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signup(username: String, password: String, confirm: String) {
+    fun signup(username: String, password: String, confirm: String, pseudo: String, email: String) {
         viewModelScope.launch {
-            if (username.isBlank() || password.isBlank()) {
+            if (username.isBlank() || password.isBlank() || pseudo.isBlank() || email.isBlank()) {
                 _authEvent.emit(AuthEvent.Error("Veuillez remplir tous les champs"))
                 return@launch
             }
@@ -60,7 +60,7 @@ class AuthViewModel @Inject constructor(
                 return@launch
             }
             _isLoading.value = true
-            repository.signup(AuthRequest(username, password))
+            repository.signup(AuthRequest(username, password, pseudo, email))
                 .onSuccess {
                     _isLoggedIn.value = true
                     _authEvent.emit(AuthEvent.Success)

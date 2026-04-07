@@ -46,10 +46,14 @@ class PostViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val userId = sessionManager.getUserId()?.toIntOrNull()
+            println("📡 Tentative de récupération des posts pour userId: $userId")
             repository.getPosts(userId).onSuccess {
+                println("✅ ${it.size} posts récupérés avec succès")
                 _posts.value = it
                 _error.value = null
             }.onFailure {
+                println("❌ Échec de la récupération: ${it.message}")
+                it.printStackTrace()
                 handleError(it, "chargement")
             }
             _isLoading.value = false
@@ -92,7 +96,6 @@ class PostViewModel @Inject constructor(
 
     fun toggleLike(postId: String, userId: Int) {
         viewModelScope.launch {
-            // Optimistic UI update
             val currentPosts = _posts.value
             _posts.value = currentPosts.map {
                 if (it.id == postId) {
@@ -104,7 +107,6 @@ class PostViewModel @Inject constructor(
             }
 
             repository.likePost(postId, userId).onSuccess { response ->
-                // Sync with server response
                 _posts.value = _posts.value.map {
                     if (it.id == postId) {
                         it.copy(
@@ -114,7 +116,6 @@ class PostViewModel @Inject constructor(
                     } else it
                 }
             }.onFailure {
-                // Rollback on failure
                 _posts.value = currentPosts
                 handleError(it, "like")
             }
@@ -134,8 +135,7 @@ class PostViewModel @Inject constructor(
     fun addComment(postId: String, text: String, authorId: Int) {
         viewModelScope.launch {
             repository.addComment(postId, text, authorId).onSuccess {
-                loadComments(postId) // Refresh comments
-                // Optionally refresh post to get new comment count
+                loadComments(postId)
                 loadPosts()
             }.onFailure {
                 handleError(it, "ajout commentaire")
@@ -144,7 +144,6 @@ class PostViewModel @Inject constructor(
     }
 
     private fun handleError(t: Throwable, action: String) {
-        t.printStackTrace()
         val message = when (t) {
             is HttpException -> "Erreur $action (HTTP ${t.code()})"
             else -> "Erreur lors de l'action $action: ${t.localizedMessage}"

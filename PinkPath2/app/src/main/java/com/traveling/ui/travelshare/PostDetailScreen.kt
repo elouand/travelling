@@ -153,7 +153,7 @@ fun PostDetailScreen(
                             },
                             color = TravelingDeepPurple
                         )
-                        Text(text = "Par ${post.authorName}", color = Color.Gray, fontSize = 14.sp)
+                        Text(text = "Par ${post.authorName ?: "Anonyme"}", color = Color.Gray, fontSize = 14.sp)
                     }
                 }
 
@@ -242,7 +242,7 @@ fun PostDetailScreen(
 
                     Icon(Icons.Default.ChatBubbleOutline, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "${post.commentsCount ?: 0}", fontWeight = FontWeight.Bold)
+                    Text(text = "${post.commentsCount}", fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -274,7 +274,7 @@ fun PostDetailScreen(
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text(text = comment.authorName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = comment.authorName ?: "Anonyme", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Text(text = comment.text ?: "", fontSize = 14.sp)
                         }
                     }
