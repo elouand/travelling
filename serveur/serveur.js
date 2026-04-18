@@ -196,7 +196,7 @@ app.get('/api/users/:userId/groups', async (req, res) => {
                             take: 3,
                             include: {
                                 user: {
-                                    select: { id: true, profileUrl: true }
+                                    select: { id: true, profileUrl: true,username: true, pseudo: true }
                                 }
                             }
                         },

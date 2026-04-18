@@ -1,6 +1,7 @@
 package com.traveling.ui.travelpath
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,7 @@ import com.traveling.ui.travelshare.PostViewModel
 fun GroupDetailScreen(
     groupId: Int,
     onBack: () -> Unit,
+    onNavigateToGroupFeed: (String) -> Unit,
     viewModel: PostViewModel = hiltViewModel()
 ) {
     val groups by viewModel.groups.collectAsState()
@@ -113,7 +115,11 @@ fun GroupDetailScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StatItem(label = "Membres", value = group.count?.users?.toString() ?: "0")
-                        StatItem(label = "Posts", value = group.count?.photos?.toString() ?: "0")
+                        StatItem(
+                            label = "Posts", 
+                            value = group.count?.photos?.toString() ?: "0",
+                            onClick = { onNavigateToGroupFeed(group.name) }
+                        )
                         StatItem(label = "Itinéraires", value = group.count?.paths?.toString() ?: "0")
                     }
 
@@ -156,8 +162,11 @@ fun GroupDetailScreen(
 }
 
 @Composable
-fun StatItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun StatItem(label: String, value: String, onClick: () -> Unit = {}) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(enabled = label == "Posts") { onClick() }
+    ) {
         Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TravelingDeepPurple)
         Text(text = label, fontSize = 14.sp, color = Color.Gray)
     }

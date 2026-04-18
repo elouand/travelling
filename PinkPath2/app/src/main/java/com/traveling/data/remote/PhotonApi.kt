@@ -33,6 +33,6 @@ data class PhotonProperties(
 data class PhotonGeometry(
     val coordinates: List<Double>
 ) {
-    val longitude: Double get() = coordinates[0]
-    val latitude: Double get() = coordinates[1]
+    val longitude: Double get() = coordinates.getOrNull(0) ?: 0.0
+    val latitude: Double get() = coordinates.getOrNull(1) ?: 0.0
 }

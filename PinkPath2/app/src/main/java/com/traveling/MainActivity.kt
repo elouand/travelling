@@ -31,6 +31,7 @@ import com.traveling.ui.travelshare.CreatePostScreen
 import com.traveling.ui.travelshare.FeedScreen
 import com.traveling.ui.travelshare.HomeScreen
 import com.traveling.ui.travelshare.LoginScreen
+import com.traveling.ui.travelshare.MapScreen
 import com.traveling.ui.travelshare.PostDetailScreen
 import com.traveling.ui.travelshare.PostViewModel
 import com.traveling.ui.travelshare.ProfileScreen
@@ -65,6 +66,7 @@ fun MainNavigation() {
             val hideBottomBar = currentRoute?.startsWith("post_detail") == true || 
                                 currentRoute?.startsWith("group_detail") == true ||
                                 currentRoute == Screen.CreatePost.route ||
+                                currentRoute?.startsWith("create_post") == true ||
                                 currentRoute == Screen.Login.route ||
                                 currentRoute == Screen.Signup.route ||
                                 currentRoute == Screen.CreateGroup.route ||
@@ -86,7 +88,7 @@ fun MainNavigation() {
                         icon = { Icon(Icons.Default.Home, contentDescription = null, tint = Color.White) }
                     )
                     NavigationBarItem(
-                        selected = currentRoute == Screen.Feed.route,
+                        selected = currentRoute?.startsWith("feed") == true,
                         onClick = { 
                             navController.navigate(Screen.Feed.route) {
                                 popUpTo(navController.graph.startDestinationId)
@@ -97,7 +99,12 @@ fun MainNavigation() {
                     )
                     NavigationBarItem(
                         selected = currentRoute == Screen.Map.route,
-                        onClick = { /* Navigate to Map */ },
+                        onClick = { 
+                            navController.navigate(Screen.Map.route) {
+                                popUpTo(navController.graph.startDestinationId)
+                                launchSingleTop = true
+                            }
+                        },
                         icon = { Icon(Icons.Default.Map, contentDescription = null, tint = Color.White) }
                     )
                     NavigationBarItem(
@@ -137,16 +144,45 @@ fun MainNavigation() {
                     }
                 )
             }
-            composable(Screen.Feed.route) {
+            composable(
+                route = "feed?groupName={groupName}&search={search}",
+                arguments = listOf(
+                    navArgument("groupName") { 
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                    navArgument("search") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
+                val groupName = backStackEntry.arguments?.getString("groupName")
+                val search = backStackEntry.arguments?.getString("search")
                 FeedScreen(
                     viewModel = postViewModel,
                     authViewModel = authViewModel,
+                    initialGroupName = groupName,
+                    initialSearch = search,
                     onPostClick = { postId ->
                         navController.navigate(Screen.PostDetail.createRoute(postId))
                     },
                     onCreatePostClick = {
                         navController.navigate(Screen.CreatePost.route)
                     }
+                )
+            }
+            composable(Screen.Map.route) {
+                MapScreen(
+                    onNavigateToFeed = { search ->
+                        navController.navigate(Screen.Feed.createRoute(search = search))
+                    },
+                    onNavigateToCreatePost = { location, lat, lon ->
+                        navController.navigate(Screen.CreatePost.createRoute(location, lat, lon))
+                    },
+                    viewModel = postViewModel
                 )
             }
             composable(
@@ -161,9 +197,22 @@ fun MainNavigation() {
                     authViewModel = authViewModel
                 )
             }
-            composable(Screen.CreatePost.route) {
+            composable(
+                route = "create_post?location={location}&lat={lat}&lon={lon}",
+                arguments = listOf(
+                    navArgument("location") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("lat") { type = NavType.FloatType; defaultValue = 0f },
+                    navArgument("lon") { type = NavType.FloatType; defaultValue = 0f }
+                )
+            ) { backStackEntry ->
+                val location = backStackEntry.arguments?.getString("location")
+                val lat = backStackEntry.arguments?.getFloat("lat")?.toDouble()
+                val lon = backStackEntry.arguments?.getFloat("lon")?.toDouble()
                 CreatePostScreen(
                     onBack = { navController.popBackStack() },
+                    initialLocation = location,
+                    initialLat = lat,
+                    initialLon = lon,
                     viewModel = postViewModel,
                     authViewModel = authViewModel
                 )
@@ -219,6 +268,9 @@ fun MainNavigation() {
                 GroupDetailScreen(
                     groupId = groupId,
                     onBack = { navController.popBackStack() },
+                    onNavigateToGroupFeed = { groupName ->
+                        navController.navigate(Screen.Feed.createRoute(groupName = groupName))
+                    },
                     viewModel = postViewModel
                 )
             }

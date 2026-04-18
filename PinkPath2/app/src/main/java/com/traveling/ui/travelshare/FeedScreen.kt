@@ -30,6 +30,8 @@ import com.traveling.ui.theme.TravelingTagYellow
 fun FeedScreen(
     onPostClick: (String) -> Unit,
     onCreatePostClick: () -> Unit,
+    initialGroupName: String? = null,
+    initialSearch: String? = null,
     viewModel: PostViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -39,25 +41,34 @@ fun FeedScreen(
     val currentUser by authViewModel.currentUser.collectAsState()
     val userGroups by viewModel.groups.collectAsState()
 
-    var selectedTab by remember { mutableStateOf("Populaires") }
+    var searchQuery by remember { mutableStateOf(initialSearch ?: "") }
+    var selectedTab by remember { mutableStateOf(if (initialGroupName != null) "Group" else "Populaires") }
     var expanded by remember { mutableStateOf(false) }
     
-    // On initialise le groupe sélectionné par le premier groupe de l'utilisateur s'il existe
-    var selectedGroup by remember { mutableStateOf<String?>(null) }
+    var selectedGroup by remember { mutableStateOf<String?>(initialGroupName) }
     
     LaunchedEffect(userGroups) {
-        if (selectedGroup == null && userGroups.isNotEmpty()) {
-            selectedGroup = userGroups.first().name
+        if (selectedGroup == null && userGroups.isNotEmpty() && initialGroupName == null) {
+            // selectedGroup = userGroups.first().name // Optional: don't auto-select if we want to show all
         }
     }
 
-    // Filtrage des posts selon l'onglet ou le groupe sélectionné
-    val filteredPosts = remember(posts, selectedTab, selectedGroup) {
-        if (selectedTab == "Populaires") {
+    // Filtrage des posts selon l'onglet, le groupe sélectionné et la recherche
+    val filteredPosts = remember(posts, selectedTab, selectedGroup, searchQuery) {
+        var result = if (selectedTab == "Populaires") {
             posts.filter { it.isPublic }
         } else {
-            posts.filter { it.groupName == selectedGroup }
+            if (selectedGroup == null) posts else posts.filter { it.groupName == selectedGroup }
         }
+
+        if (searchQuery.isNotBlank()) {
+            result = result.filter { 
+                it.title?.contains(searchQuery, ignoreCase = true) == true ||
+                it.content?.contains(searchQuery, ignoreCase = true) == true ||
+                it.tags?.any { tag -> tag.contains(searchQuery, ignoreCase = true) } == true
+            }
+        }
+        result
     }
 
     LaunchedEffect(isLoggedIn) {
@@ -88,7 +99,11 @@ fun FeedScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             
-            TravelingSearchBar(placeholder = "Rechercher des posts")
+            TravelingSearchBar(
+                placeholder = "Rechercher des posts",
+                initialValue = searchQuery,
+                onValueChange = { searchQuery = it }
+            )
             
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -149,9 +164,17 @@ fun FeedScreen(
                             onDismissRequest = { expanded = false },
                             modifier = Modifier.background(Color.White)
                         ) {
+                            DropdownMenuItem(
+                                text = { Text("Tous mes groupes", color = TravelingDeepPurple) },
+                                onClick = {
+                                    selectedGroup = null
+                                    selectedTab = "Group"
+                                    expanded = false
+                                }
+                            )
                             userGroups.forEach { group ->
                                 DropdownMenuItem(
-                                    text = { Text(group.name, color = TravelingDeepPurple) },
+                                    text = { Text(group.name ?: "", color = TravelingDeepPurple) },
                                     onClick = {
                                         selectedGroup = group.name
                                         selectedTab = "Group"

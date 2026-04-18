@@ -262,7 +262,7 @@ fun GroupCard(group: Group, onClick: () -> Unit) {
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = group.name,
+                        text = group.name ?: "Sans nom",
                         style = MaterialTheme.typography.titleLarge,
                         color = TravelingDeepPurple,
                         fontWeight = FontWeight.Bold,

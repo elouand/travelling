@@ -32,6 +32,8 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.traveling.data.remote.PhotonFeature
+import com.traveling.data.remote.PhotonGeometry
+import com.traveling.data.remote.PhotonProperties
 import com.traveling.ui.theme.TravelingDeepPurple
 import com.traveling.util.uriToFile
 import kotlinx.coroutines.delay
@@ -41,6 +43,9 @@ import java.io.File
 @Composable
 fun CreatePostScreen(
     onBack: () -> Unit,
+    initialLocation: String? = null,
+    initialLat: Double? = null,
+    initialLon: Double? = null,
     viewModel: PostViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -59,9 +64,18 @@ fun CreatePostScreen(
     var selectedGroup by remember { mutableStateOf<com.traveling.domain.model.Group?>(null) }
     var groupDropdownExpanded by remember { mutableStateOf(false) }
 
-    var locationQuery by remember { mutableStateOf("") }
+    var locationQuery by remember { mutableStateOf(initialLocation ?: "") }
     var suggestions by remember { mutableStateOf<List<PhotonFeature>>(emptyList()) }
-    var selectedLocation by remember { mutableStateOf<PhotonFeature?>(null) }
+    var selectedLocation by remember { 
+        mutableStateOf<PhotonFeature?>(
+            if (initialLocation != null && initialLat != null && initialLon != null) {
+                PhotonFeature(
+                    geometry = PhotonGeometry(listOf(initialLon, initialLat)),
+                    properties = PhotonProperties(name = initialLocation, country = "", city = "")
+                )
+            } else null
+        ) 
+    }
 
     // Audio state
     var isRecording by remember { mutableStateOf(false) }
@@ -315,18 +329,18 @@ fun CreateOptionBox(
     modifier: Modifier = Modifier
 ) {
     Surface(
+        modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         color = color.copy(alpha = 0.1f),
-        modifier = modifier.height(80.dp)
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.2f))
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(8.dp)
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = color)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = title, color = color, fontSize = 12.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            Icon(icon, null, tint = color)
+            Spacer(Modifier.width(12.dp))
+            Text(title, color = color, fontWeight = FontWeight.Medium)
         }
     }
 }
